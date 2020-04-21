@@ -3,7 +3,7 @@ using UnityEngine;
 public class Game : MonoBehaviour {
     [SerializeField] private GameSettings _settings;
     [SerializeField] private MapView _mapView;
-    [SerializeField] private Transform _ball;
+    [SerializeField] private Ball _ball;
     [SerializeField] private Camera _cam;
 
     private int _dir = Direction.RIGHT;
@@ -17,8 +17,11 @@ public class Game : MonoBehaviour {
     private Vector2 _ballPos;
     private bool _isGame;
     private float _distToTakeBonus;
+    private FallowTo _camFallowTo;
 
     private void Awake() {
+        _camFallowTo = _cam.GetComponent<FallowTo>();
+        
         if (_settings.BonusAlgorithm == GameSettings.BonusSpawnAlgorithm.BY_SEQUENCE)
             _generator = new MapGeneratorBonusBySequence();
         else
@@ -31,17 +34,19 @@ public class Game : MonoBehaviour {
     private void Start() {
         StartGame();
         _mapView.Init(_cam, RequestNextSegment);
-        _distToTakeBonus = (_ball.transform.localScale.z + _mapView.GetBonusSizeOnMap()) / 3f;
+        _distToTakeBonus = (_ball.GetSize() + _mapView.GetBonusSizeOnMap()) / 3f;
     }
 
     private void StartGame() {
         PrepareFirstSegment();
         _ballPos = _currSegment.size / 2f;
         _isGame = true;
+        _camFallowTo.enabled = true;
     }
 
     private void StopGame() {
         _isGame = false;
+        _camFallowTo.enabled = false;
     }
 
     private void PrepareFirstSegment() {
@@ -96,8 +101,8 @@ public class Game : MonoBehaviour {
             GoToNextSegment();
         }
         
-        _ball.position = _mapView.MapSegmentPosToWorld(_map.Count, _ballPos) 
-                         + _mapView.transform.up * _ball.localScale.y / 2f;
+        _ball.transform.position = _mapView.MapSegmentPosToWorld(_map.Count, _ballPos) 
+                         + _mapView.transform.up * _ball.GetSize() / 2f;
 
         if (_currSegment.hasBonus && Vector2.Distance(_ballPos, _currSegment.bonusPos) < _distToTakeBonus) {
             _mapView.TakeBonus(_map.Count);
@@ -118,6 +123,7 @@ public class Game : MonoBehaviour {
         if (_ballPos.x < 0f || _ballPos.y < 0f
             || _ballPos.x > _currSegment.size.x || _ballPos.y > _currSegment.size.y) 
         {
+            _ball.AnimateFall(MapView.LocalFromMap(_moveVector), _settings.BallSpeed);
             StopGame();
         }
     }

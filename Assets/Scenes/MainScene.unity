@@ -152,7 +152,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _settings: {fileID: 11400000, guid: ce6ab4a5c79b781049ff1e302e0a2e88, type: 2}
   _mapView: {fileID: 956226320}
-  _ball: {fileID: 2042742575}
+  _ball: {fileID: 1632780315923466143}
   _cam: {fileID: 963194227}
 --- !u!4 &240625174
 Transform:
@@ -568,3 +568,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 3a7eb9a29488f9339a2c3675b07889c6, type: 3}
+--- !u!114 &1632780315923466143 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: -2829183519836187071, guid: 3a7eb9a29488f9339a2c3675b07889c6,
+    type: 3}
+  m_PrefabInstance: {fileID: 1632780315923466142}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 481081564ec5427682d73785e92134a8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

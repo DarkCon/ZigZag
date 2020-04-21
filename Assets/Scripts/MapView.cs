@@ -107,7 +107,7 @@ public class MapView : MonoBehaviour {
         return new Vector3(map.x, local.y, map.y);
     }
     
-    private static Vector3 LocalFromMap(Vector2 map) {
+    public static Vector3 LocalFromMap(Vector2 map) {
         return new Vector3(map.x, 0f, map.y);
     }
 
