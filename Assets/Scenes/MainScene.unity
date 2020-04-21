@@ -307,7 +307,7 @@ MonoBehaviour:
   _segmentTpl: {fileID: 59279660489157132}
   _maxLength: 100
   _camBorderTop: 1
-  _camBorderBottom: 0.1
+  _camBorderBottom: 0.3
 --- !u!1 &963194225
 GameObject:
   m_ObjectHideFlags: 0

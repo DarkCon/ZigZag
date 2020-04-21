@@ -10,7 +10,7 @@ public class Game : MonoBehaviour {
     private Vector2 _moveVector = Vector2.zero;
     
     private readonly CyclicArray<Segment> _map = new CyclicArray<Segment>();
-    private MapGeneratorAbstract _generator;
+    private IMapGenerator _generator;
 
     private bool _isFirstSegment;
     private Segment _currSegment;

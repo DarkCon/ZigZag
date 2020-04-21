@@ -16,4 +16,7 @@ MonoBehaviour:
   _segmentMinLen: 1
   _segmentMaxLen: 5
   _firstTileSize: 3
+  _bonusPeriod: 5
+  _minBonusOffsetFromEdge: 0.2
+  _bonusAlgorithm: 1
   _ballSpeed: 3

@@ -15,8 +15,8 @@ public class MapView : MonoBehaviour {
     private Vector2 _lastSegmentPosMap = Vector2.zero;
     private Vector2 _lastSegmentSizeMap = Vector2.zero;
     
-    private Vector3 _lastSegmentPosLocal = Vector3.zero;
-    private Vector3 _firstSegmentPosLocal = Vector3.zero;
+    private Vector3 _lastSegmentPosWorld = Vector3.zero;
+    private Vector3 _firstSegmentPosWorld = Vector3.zero;
     private Camera _cam;
 
     private void Awake() {
@@ -32,13 +32,13 @@ public class MapView : MonoBehaviour {
 
     private void Update() {
         var camPos = transform.InverseTransformPoint(_cam.transform.position);
-        while (LocalPosToCameraView(_lastSegmentPosLocal).y < _camBorderTop 
-            && Vector3.Distance(camPos, _lastSegmentPosLocal) < _maxLength) 
+        while (_cam.WorldToViewportPoint(_lastSegmentPosWorld).y < _camBorderTop 
+               && Vector3.Distance(camPos, _lastSegmentPosWorld) < _maxLength) 
         {
             ExpandMap();
         }
 
-        while (_segments.Count > 0 && LocalPosToCameraView(_firstSegmentPosLocal).y < _camBorderBottom) {
+        while (_segments.Count > 0 && _cam.WorldToViewportPoint(_firstSegmentPosWorld).y < _camBorderBottom) {
             TrimMap();
         }
     }
@@ -57,13 +57,17 @@ public class MapView : MonoBehaviour {
         var pos = _lastSegmentPosMap + (_lastSegmentSizeMap + offset) / 2f;
 
         segmentView.segment.localScale = SetLocalFromMap(segmentView.segment.localScale, size);
-        segmentView.transform.localPosition = _lastSegmentPosLocal = SetLocalFromMap(segmentView.transform.localPosition, pos);
+        segmentView.transform.localPosition = SetLocalFromMap(segmentView.transform.localPosition, pos);
         
         segmentView.bonus.gameObject.SetActive(segmentInfo.hasBonus);
         segmentView.bonus.localPosition = SetLocalFromMap(segmentView.bonus.localPosition, segmentInfo.bonusPos - size / 2f);
         
         _lastSegmentPosMap = pos;
         _lastSegmentSizeMap = size;
+        _lastSegmentPosWorld = segmentView.segment.position;
+        if (_segments.Count == 0) {
+            _firstSegmentPosWorld = GetFarCornerOfSegment(segmentView);
+        }
         
         _segments.Enqueue(segmentView);
     }
@@ -72,8 +76,14 @@ public class MapView : MonoBehaviour {
         var segment = _segments.Dequeue();
         ReturnSegment(segment);
         if (_segments.Count > 0) {
-            _firstSegmentPosLocal = _segments.Peek().transform.localPosition;
+            var firstSegment = _segments.Peek();
+            _firstSegmentPosWorld = GetFarCornerOfSegment(firstSegment);
         }
+    }
+
+    private static Vector3 GetFarCornerOfSegment(MapViewSegment segment) {
+        return segment.transform.TransformPoint(
+            segment.segment.localPosition + segment.segment.localScale / 2f);
     }
 
     private MapViewSegment TakeSegment() {
@@ -91,11 +101,6 @@ public class MapView : MonoBehaviour {
     private void ReturnSegment(MapViewSegment segment) {
         segment.gameObject.SetActive(false);
         _segmentsPool.Enqueue(segment);
-    }
-
-    private Vector3 LocalPosToCameraView(Vector3 local) {
-        var world = transform.TransformPoint(local);
-        return _cam.WorldToViewportPoint(world);
     }
 
     private static Vector3 SetLocalFromMap(Vector3 local, Vector2 map) {
