@@ -10,20 +10,28 @@ public class Game : MonoBehaviour {
     private Vector2 _moveVector = Vector2.zero;
     
     private readonly CyclicArray<Segment> _map = new CyclicArray<Segment>();
-    private MapGenerator _generator;
+    private MapGeneratorAbstract _generator;
 
     private bool _isFirstSegment;
     private Segment _currSegment;
     private Vector2 _ballPos;
     private bool _isGame;
+    private float _distToTakeBonus;
 
     private void Awake() {
-        _generator = new MapGenerator();
+        if (_settings.BonusAlgorithm == GameSettings.BonusSpawnAlgorithm.BY_SEQUENCE)
+            _generator = new MapGeneratorBonusBySequence();
+        else
+            _generator = new MapGeneratorRandomBonus();
+
+        _generator.MinBonusOffsetFromEdge = _settings.MinBonusOffsetFromEdge;
+        _generator.BonusPeriod = _settings.BonusPeriod;
     }
 
     private void Start() {
         StartGame();
         _mapView.Init(_cam, RequestNextSegment);
+        _distToTakeBonus = (_ball.transform.localScale.z + _mapView.GetBonusSizeOnMap()) / 3f;
     }
 
     private void StartGame() {
@@ -37,9 +45,11 @@ public class Game : MonoBehaviour {
     }
 
     private void PrepareFirstSegment() {
+        _generator.ResetState();
+        
         _generator.SegmentWidth = _settings.FirstTileSize;
-        _generator.MinSegmentLen = _settings.FirstTileSize;
-        _generator.MaxSegmentLen = _settings.FirstTileSize;
+        _generator.MinSegmentLen = 1;
+        _generator.MaxSegmentLen = 1;
         
         _currSegment = _generator.GenerateNextSegment();
         
@@ -88,6 +98,10 @@ public class Game : MonoBehaviour {
         
         _ball.position = _mapView.MapSegmentPosToWorld(_map.Count, _ballPos) 
                          + _mapView.transform.up * _ball.localScale.y / 2f;
+
+        if (_currSegment.hasBonus && Vector2.Distance(_ballPos, _currSegment.bonusPos) < _distToTakeBonus) {
+            _mapView.TakeBonus(_map.Count);
+        }
     }
 
     private void GoToNextSegment() {

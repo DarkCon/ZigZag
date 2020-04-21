@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class MapView : MonoBehaviour {
-    [SerializeField] private Transform _segmentTpl;
+    [SerializeField] private MapViewSegment _segmentTpl;
     [SerializeField] private float _maxLength = 100f;
     [SerializeField] private float _camBorderTop = 1f;
     [SerializeField] private float _camBorderBottom = 0.1f;
 
     private Func<Segment> _requestNextSegment;
-    private readonly Queue<Transform> _segmentsPool = new Queue<Transform>();
-    private readonly CyclicArray<Transform> _segments = new CyclicArray<Transform>();
+    private readonly Queue<MapViewSegment> _segmentsPool = new Queue<MapViewSegment>();
+    private readonly CyclicArray<MapViewSegment> _segments = new CyclicArray<MapViewSegment>();
 
     private Vector2 _lastSegmentPosMap = Vector2.zero;
     private Vector2 _lastSegmentSizeMap = Vector2.zero;
@@ -56,8 +56,12 @@ public class MapView : MonoBehaviour {
         }
         var pos = _lastSegmentPosMap + (_lastSegmentSizeMap + offset) / 2f;
 
-        segmentView.localScale = SetLocalFromMap(segmentView.localScale, size);
-        segmentView.localPosition = _lastSegmentPosLocal = SetLocalFromMap(segmentView.localPosition, pos);
+        segmentView.segment.localScale = SetLocalFromMap(segmentView.segment.localScale, size);
+        segmentView.transform.localPosition = _lastSegmentPosLocal = SetLocalFromMap(segmentView.transform.localPosition, pos);
+        
+        segmentView.bonus.gameObject.SetActive(segmentInfo.hasBonus);
+        segmentView.bonus.localPosition = SetLocalFromMap(segmentView.bonus.localPosition, segmentInfo.bonusPos - size / 2f);
+        
         _lastSegmentPosMap = pos;
         _lastSegmentSizeMap = size;
         
@@ -68,23 +72,23 @@ public class MapView : MonoBehaviour {
         var segment = _segments.Dequeue();
         ReturnSegment(segment);
         if (_segments.Count > 0) {
-            _firstSegmentPosLocal = _segments.Peek().localPosition;
+            _firstSegmentPosLocal = _segments.Peek().transform.localPosition;
         }
     }
 
-    private Transform TakeSegment() {
-        Transform segment;
+    private MapViewSegment TakeSegment() {
+        MapViewSegment segment;
         if (_segmentsPool.Count > 0) {
             segment = _segmentsPool.Dequeue();
         } else {
-            segment = Instantiate(_segmentTpl, _segmentTpl.parent, false);
+            segment = Instantiate(_segmentTpl, _segmentTpl.transform.parent, false);
         }
         
         segment.gameObject.SetActive(true);
         return segment;
     }
 
-    private void ReturnSegment(Transform segment) {
+    private void ReturnSegment(MapViewSegment segment) {
         segment.gameObject.SetActive(false);
         _segmentsPool.Enqueue(segment);
     }
@@ -105,12 +109,21 @@ public class MapView : MonoBehaviour {
     public Vector3 MapSegmentPosToWorld(int segmentIdFromLast, Vector2 segmentPos) {
         if (segmentIdFromLast < _segments.Count) {
             var segmentView = _segments.GetFromLast(segmentIdFromLast);
-            var scale = segmentView.localScale;
-            var local = segmentView.localPosition 
-                - new Vector3(scale.x, -scale.y, scale.z) / 2f 
+            var scale = segmentView.segment.localScale;
+            var local = segmentView.transform.localPosition 
+                - new Vector3(scale.x, 0f, scale.z) / 2f 
                 + LocalFromMap(segmentPos);
             return transform.TransformPoint(local);
         }
         return Vector3.zero;
+    }
+
+    public float GetBonusSizeOnMap() {
+        return _segmentTpl.bonus.localScale.z;
+    }
+
+    public void TakeBonus(int segmentIdFromLast) {
+        var segmentView = _segments.GetFromLast(segmentIdFromLast);
+        segmentView.bonus.gameObject.SetActive(false);
     }
 }
