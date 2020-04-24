@@ -5,6 +5,8 @@ public class Game : MonoBehaviour {
     [SerializeField] private MapView _mapView;
     [SerializeField] private Ball _ball;
     [SerializeField] private Camera _cam;
+    [Header("UI")] 
+    [SerializeField] private GameObject _pnlChooseDifficult;
 
     private int _dir = Direction.RIGHT;
     private Vector2 _moveVector = Vector2.zero;
@@ -12,7 +14,6 @@ public class Game : MonoBehaviour {
     private readonly CyclicArray<Segment> _map = new CyclicArray<Segment>();
     private IMapGenerator _generator;
 
-    private bool _isFirstSegment;
     private Segment _currSegment;
     private Vector2 _ballPos;
     private bool _isGame;
@@ -21,7 +22,11 @@ public class Game : MonoBehaviour {
 
     private void Awake() {
         _camFallowTo = _cam.GetComponent<FallowTo>();
-        
+        SetSettings(_settings);
+    }
+
+    public void SetSettings(GameSettings settings) {
+        _settings = settings;
         if (_settings.BonusAlgorithm == GameSettings.BonusSpawnAlgorithm.BY_SEQUENCE)
             _generator = new MapGeneratorBonusBySequence();
         else
@@ -31,14 +36,20 @@ public class Game : MonoBehaviour {
         _generator.BonusPeriod = _settings.BonusPeriod;
     }
 
-    private void Start() {
+    public void OnChooseDifficult(GameSettings settings) {
+        SetSettings(settings);
+        _pnlChooseDifficult.SetActive(false);
         StartGame();
-        _mapView.Init(_cam, RequestNextSegment);
+    }
+
+    private void Start() {
+        PrepareFirstSegment();
         _distToTakeBonus = (_ball.GetSize() + _mapView.GetBonusSizeOnMap()) / 3f;
     }
 
     private void StartGame() {
         PrepareFirstSegment();
+        _mapView.enabled = true;
         _ballPos = _currSegment.size / 2f;
         _isGame = true;
         _camFallowTo.enabled = true;
@@ -62,15 +73,10 @@ public class Game : MonoBehaviour {
         _generator.MinSegmentLen = _settings.SegmentMinLen;
         _generator.MaxSegmentLen = _settings.SegmentMaxLen;
         
-        _isFirstSegment = true;
+        _mapView.Init(_cam, RequestNextSegment, _currSegment);
     }
-
+ 
     private Segment RequestNextSegment() {
-        if (_isFirstSegment) {
-            _isFirstSegment = false;
-            return _currSegment;
-        }
-
         var segment = _generator.GenerateNextSegment(); 
         _map.Enqueue(segment);
         return segment;

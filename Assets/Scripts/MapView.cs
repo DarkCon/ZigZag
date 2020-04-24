@@ -21,13 +21,13 @@ public class MapView : MonoBehaviour {
 
     private void Awake() {
         _segmentTpl.gameObject.SetActive(false);
-        gameObject.SetActive(false);
+        enabled = false;
     }
 
-    public void Init(Camera cam, Func<Segment> requestNextSegment) {
+    public void Init(Camera cam, Func<Segment> requestNextSegment, Segment firstSegment) {
         _cam = cam;
         _requestNextSegment = requestNextSegment;
-        gameObject.SetActive(true);
+        ExpandMap(firstSegment);
     }
 
     private void Update() {
@@ -35,7 +35,7 @@ public class MapView : MonoBehaviour {
         while (_cam.WorldToViewportPoint(_lastSegmentPosWorld).y < _camBorderTop 
                && Vector3.Distance(camPos, _lastSegmentPosWorld) < _maxLength) 
         {
-            ExpandMap();
+            ExpandMap(_requestNextSegment());
         }
 
         while (_segments.Count > 0 && _cam.WorldToViewportPoint(_firstSegmentPosWorld).y < _camBorderBottom) {
@@ -43,8 +43,7 @@ public class MapView : MonoBehaviour {
         }
     }
 
-    private void ExpandMap() {
-        var segmentInfo = _requestNextSegment();
+    private void ExpandMap(Segment segmentInfo) {
         var segmentView = TakeSegment();
 
         var size = segmentInfo.size;

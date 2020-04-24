@@ -10,13 +10,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f47eced3eeffabdcfa8381097c370a49, type: 3}
-  m_Name: Hard
+  m_Name: Easy
   m_EditorClassIdentifier: 
-  _tileWidth: 1
+  _tileWidth: 3
   _segmentMinLen: 1
-  _segmentMaxLen: 4
+  _segmentMaxLen: 3
   _firstTileSize: 3
   _bonusPeriod: 5
   _minBonusOffsetFromEdge: 0.2
   _bonusAlgorithm: 1
-  _ballSpeed: 4.5
+  _ballSpeed: 3
