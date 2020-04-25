@@ -141,7 +141,7 @@ namespace Map {
 
         public void TakeBonus(int segmentIdFromLast) {
             var segmentView = _segments.GetFromLast(segmentIdFromLast);
-            segmentView.bonus.gameObject.SetActive(false);
+            segmentView.TakeBonus();
         }
     }
 }
