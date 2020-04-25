@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using Data;
 using UnityEngine;
 
@@ -16,6 +17,7 @@ namespace Map {
 
         private RequestNextSegment _requestNextSegment;
         private readonly Queue<MapViewSegment> _segmentsPool = new Queue<MapViewSegment>(INITIAL_MAP_CAPACITY);
+        private readonly HashSet<MapViewSegment> _segmentsTransitionToPool = new HashSet<MapViewSegment>(); 
         private readonly CyclicArray<MapViewSegment> _segments = new CyclicArray<MapViewSegment>(INITIAL_MAP_CAPACITY);
 
         private Vector2 _lastSegmentPosMap = Vector2.zero;
@@ -32,10 +34,11 @@ namespace Map {
         }
 
         public void ReCreate(Segment firstSegment, RequestNextSegment requestNextSegment) {
-            foreach (var segment in _segments) {
+            foreach (var segment in _segments.Concat(_segmentsTransitionToPool)) {
                 ReturnSegment(segment);
             }
             _segments.Clear();
+            _segmentsTransitionToPool.Clear();
             _requestNextSegment = requestNextSegment;
 
             _lastSegmentPosMap = Vector2.zero;
@@ -87,6 +90,7 @@ namespace Map {
         private void TrimMap() {
             var segment = _segments.Dequeue();
             segment.Hide();
+            _segmentsTransitionToPool.Add(segment);
             if (_segments.Count > 0) {
                 var firstSegment = _segments.Peek();
                 _firstSegmentPosWorld = GetFarCornerOfSegment(firstSegment);
@@ -104,11 +108,16 @@ namespace Map {
                 segment = _segmentsPool.Dequeue();
             } else {
                 segment = Instantiate(_segmentTpl, _segmentTpl.transform.parent, false);
-                segment.OnHided += ReturnSegment;
+                segment.OnHided += OnSegmentHided;
             }
         
             segment.gameObject.SetActive(true);
             return segment;
+        }
+
+        private void OnSegmentHided(MapViewSegment segment) {
+            _segmentsTransitionToPool.Remove(segment);
+            ReturnSegment(segment);
         }
 
         private void ReturnSegment(MapViewSegment segment) {
