@@ -4,6 +4,8 @@ using UnityEngine;
 
 namespace Map {
     public class MapView : MonoBehaviour {
+        public const int INITIAL_MAP_CAPACITY = 100;
+        
         public delegate Segment RequestNextSegment();
     
         [SerializeField] private Camera _cam;
@@ -13,8 +15,8 @@ namespace Map {
         [SerializeField] private float _camBorderBottom = 0.1f;
 
         private RequestNextSegment _requestNextSegment;
-        private readonly Queue<MapViewSegment> _segmentsPool = new Queue<MapViewSegment>();
-        private readonly CyclicArray<MapViewSegment> _segments = new CyclicArray<MapViewSegment>();
+        private readonly Queue<MapViewSegment> _segmentsPool = new Queue<MapViewSegment>(INITIAL_MAP_CAPACITY);
+        private readonly CyclicArray<MapViewSegment> _segments = new CyclicArray<MapViewSegment>(INITIAL_MAP_CAPACITY);
 
         private Vector2 _lastSegmentPosMap = Vector2.zero;
         private Vector2 _lastSegmentSizeMap = Vector2.zero;

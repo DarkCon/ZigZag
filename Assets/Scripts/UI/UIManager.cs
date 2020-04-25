@@ -23,7 +23,7 @@ namespace UI {
             var state = GameEvent.Current;
             
             _chooseDifficult.gameObject.SetActive(state == GameStage.PREPARE);
-            _pnlGame.SetActive(state == GameStage.READY || state == GameStage.START);
+            _pnlGame.SetActive(state == GameStage.READY || state == GameStage.START || state == GameStage.STOP);
             _hintReady.SetActive(state == GameStage.READY);
             _pnlEndGame.SetActive(state == GameStage.STOP);
         }

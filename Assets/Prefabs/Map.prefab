@@ -47,9 +47,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _cam: {fileID: 0}
   _segmentTpl: {fileID: 9005588161701966611}
-  _maxLength: 100
+  _maxLength: 60
   _camBorderTop: 1
   _camBorderBottom: 0.3
+  CanExpand: 0
+  CanTrim: 0
 --- !u!114 &4006675569288089345
 MonoBehaviour:
   m_ObjectHideFlags: 0

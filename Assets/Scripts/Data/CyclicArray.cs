@@ -8,11 +8,11 @@ namespace Data {
         private int _start;
         private int _end;
         private int _count;
-        private int _maxSize;
+        private int _capacity;
 
-        public CyclicArray(int maxSize = 10) {
-            _maxSize = maxSize;
-            _a = new T[_maxSize];
+        public CyclicArray(int capacity = 10) {
+            _capacity = capacity;
+            _a = new T[_capacity];
             Clear();
         }
 
@@ -23,12 +23,12 @@ namespace Data {
         }
 
         public void Enqueue(T elem) {
-            if (_maxSize - _count <= 1) {
-                MaxSize += Math.Max(_maxSize, 10);
+            if (_capacity - _count <= 1) {
+                Capacity += Math.Max(_capacity, 10);
             } 
             _a[_end] = elem;
             ++_end;
-            _end %= _maxSize;
+            _end %= _capacity;
             ++_count;
         }
 
@@ -36,7 +36,7 @@ namespace Data {
             var start = _start;
             --_count;
             ++_start;
-            _start %= _maxSize;
+            _start %= _capacity;
             return _a[start];
         }
 
@@ -44,10 +44,10 @@ namespace Data {
             return _a[_start];
         }
 
-        public int MaxSize {
-            get { return _maxSize; }
+        public int Capacity {
+            get { return _capacity; }
             set {
-                if (_maxSize != value) {
+                if (_capacity != value) {
                     var newArray = new T[value];
                     _count = Math.Min(_count, value);
                     for (int i = 0; i < _count; ++i) {
@@ -56,17 +56,17 @@ namespace Data {
                     _a = newArray;
                     _start = 0;
                     _end = _count;
-                    _maxSize = value;
+                    _capacity = value;
                 }
             }
         }
 
         public int Count => _count;
 
-        public T this[int index] => _a[(_start + index) % _maxSize];
+        public T this[int index] => _a[(_start + index) % _capacity];
 
         public T GetFromLast(int index) {
-            return _a[(_maxSize + _end - index - 1) % _maxSize];
+            return _a[(_capacity + _end - index - 1) % _capacity];
         }
 
         public IEnumerator<T> GetEnumerator() {

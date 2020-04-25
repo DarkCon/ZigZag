@@ -8,7 +8,7 @@ namespace Map {
     
         public static MapManager Instance { get; private set; }
 
-        public readonly CyclicArray<Segment> Map = new CyclicArray<Segment>();
+        public readonly CyclicArray<Segment> Map = new CyclicArray<Segment>(MapView.INITIAL_MAP_CAPACITY);
         public MapView View => _mapView;
 
         private IMapGenerator _generator;
