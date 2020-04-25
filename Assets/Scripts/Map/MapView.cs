@@ -24,8 +24,8 @@ namespace Map {
         private Vector3 _lastSegmentPosWorld = Vector3.zero;
         private Vector3 _firstSegmentPosWorld = Vector3.zero;
 
-        public bool CanExpand;
-        public bool CanTrim;
+        public bool CanExpand { get; set; }
+        public bool CanTrim { get; set; }
 
         private void Awake() {
             _segmentTpl.gameObject.SetActive(false);
