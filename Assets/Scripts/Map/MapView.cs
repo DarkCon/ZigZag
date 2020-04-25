@@ -86,7 +86,7 @@ namespace Map {
 
         private void TrimMap() {
             var segment = _segments.Dequeue();
-            ReturnSegment(segment);
+            segment.Hide();
             if (_segments.Count > 0) {
                 var firstSegment = _segments.Peek();
                 _firstSegmentPosWorld = GetFarCornerOfSegment(firstSegment);
@@ -104,6 +104,7 @@ namespace Map {
                 segment = _segmentsPool.Dequeue();
             } else {
                 segment = Instantiate(_segmentTpl, _segmentTpl.transform.parent, false);
+                segment.OnHided += ReturnSegment;
             }
         
             segment.gameObject.SetActive(true);

@@ -142,6 +142,8 @@ MonoBehaviour:
   segment: {fileID: 59279661949738857}
   bonus: {fileID: 4497471405253015778}
   _particleSystem: {fileID: 1489849243191845653}
+  _fallSpeed: 4
+  _fallHeight: 8
 --- !u!1 &7930489769433971664
 GameObject:
   m_ObjectHideFlags: 0
