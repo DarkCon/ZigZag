@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Data;
@@ -14,6 +15,7 @@ namespace Map {
         [SerializeField] private float _maxLength = 100f;
         [SerializeField] private float _camBorderTop = 1f;
         [SerializeField] private float _camBorderBottom = 0.1f;
+        [SerializeField] private float _teleportDist = 100000f;
 
         private RequestNextSegment _requestNextSegment;
         private readonly Queue<MapViewSegment> _segmentsPool = new Queue<MapViewSegment>(INITIAL_MAP_CAPACITY);
@@ -25,6 +27,8 @@ namespace Map {
     
         private Vector3 _lastSegmentPosWorld = Vector3.zero;
         private Vector3 _firstSegmentPosWorld = Vector3.zero;
+
+        private int _animationsInSegments;
 
         public bool CanExpand { get; set; }
         public bool CanTrim { get; set; }
@@ -62,6 +66,23 @@ namespace Map {
             }
         }
 
+        private void FixedUpdate() {
+            if (_animationsInSegments == 0 && _lastSegmentPosWorld.magnitude > _teleportDist)
+                Teleport();
+        }
+
+        private void Teleport() {
+            foreach (Transform child in transform) {
+                if (child.gameObject.activeSelf) {
+                    child.position -= _lastSegmentPosWorld;
+                }
+            }
+
+            _firstSegmentPosWorld -= _lastSegmentPosWorld;
+            _lastSegmentPosMap -= MapFromLocal(_lastSegmentPosWorld);
+            _lastSegmentPosWorld = Vector3.zero;
+        }
+
         private void ExpandMap(Segment segmentInfo) {
             var segmentView = TakeSegment();
 
@@ -82,7 +103,7 @@ namespace Map {
         
             _lastSegmentPosMap = pos;
             _lastSegmentSizeMap = size;
-            _lastSegmentPosWorld = segmentView.segment.position;
+            _lastSegmentPosWorld = segmentView.transform.position;
         
             _segments.Enqueue(segmentView);
         }
@@ -109,6 +130,7 @@ namespace Map {
             } else {
                 segment = Instantiate(_segmentTpl, _segmentTpl.transform.parent, false);
                 segment.OnHided += OnSegmentHided;
+                segment.OnBonusAnimationEnd += OnSegmentBonusAnimationEnd;
             }
         
             segment.gameObject.SetActive(true);
@@ -118,6 +140,10 @@ namespace Map {
         private void OnSegmentHided(MapViewSegment segment) {
             _segmentsTransitionToPool.Remove(segment);
             ReturnSegment(segment);
+        }
+
+        private void OnSegmentBonusAnimationEnd(MapViewSegment obj) {
+            --_animationsInSegments;
         }
 
         private void ReturnSegment(MapViewSegment segment) {
@@ -131,6 +157,10 @@ namespace Map {
     
         public static Vector3 LocalFromMap(Vector2 map) {
             return new Vector3(map.x, 0f, map.y);
+        }
+        
+        public static Vector2 MapFromLocal(Vector3 local) {
+            return new Vector2(local.x, local.z);
         }
 
         public Vector3 MapSegmentPosToWorld(int segmentIdFromLast, Vector2 segmentPos) {
@@ -152,6 +182,7 @@ namespace Map {
         public void TakeBonus(int segmentIdFromLast) {
             var segmentView = _segments.GetFromLast(segmentIdFromLast);
             segmentView.TakeBonus();
+            ++_animationsInSegments;
         }
     }
 }

@@ -12,11 +12,14 @@ namespace Map {
         [SerializeField] private float _fallHeight = 2f;
 
         public Action<MapViewSegment> OnHided;
+        public Action<MapViewSegment> OnBonusAnimationEnd;
 
         private void OnDisable() {
-            if (_particleSystem.isPlaying)
-                _particleSystem.Stop();
             StopAllCoroutines();
+            if (_particleSystem.isPlaying) {
+                _particleSystem.Stop();
+                OnBonusAnimationEnd?.Invoke(this);
+            }
 
             var pos = transform.localPosition;
             pos.y = 0f;
@@ -24,9 +27,7 @@ namespace Map {
         }
 
         public void TakeBonus() {
-            bonus.gameObject.SetActive(false);
-            _particleSystem.transform.position = bonus.position;
-            _particleSystem.Play();
+            StartCoroutine(TakeBonusAnimation());
         }
 
         public void Hide() {
@@ -46,6 +47,18 @@ namespace Map {
             } while (startY - currY < _fallHeight);
             
             OnHided?.Invoke(this);
+        }
+
+        private IEnumerator TakeBonusAnimation() {
+            bonus.gameObject.SetActive(false);
+            _particleSystem.transform.position = bonus.position;
+            _particleSystem.Play();
+
+            while (_particleSystem.isPlaying) {
+                yield return null;
+            }
+            
+            OnBonusAnimationEnd?.Invoke(this);
         }
     }
 }
